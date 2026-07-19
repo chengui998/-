@@ -1,0 +1,132 @@
+一、项目概览
+项目	说明
+名称	私彩内容后台系统 + 动态随机子域名网关系统
+版本	v1.2.4 (2026-07-19)
+定位	澳门/香港彩票资讯站 + 防封动态网关
+二、核心子系统
+1. 后台管理系统 (admin/ - Vue 3 + Element Plus)
+基于 RBAC 的权限管理（超级管理员、角色、模块、权限码三级控制）
+管理员用户管理（CRUD、角色分配、状态控制）
+角色管理（自定义权限矩阵）
+模块管理（功能模块 + 可用操作定义）
+2. 内容管理系统 (backend/ - NestJS + PostgreSQL + Redis)
+站点设置 — 标题、favicon、logo、SEO 关键字/描述、前端 base URL
+期数管理 — 手动 + 自动推进彩票期数，支持滚动时间配置
+页面布局编辑器 — 可视化组件式页面构建器，支持草稿/发布流程
+图片空间 — 图片上传库，按分类管理，支持 CRUD 和批量操作
+生肖波色管理 — 生肖对波色的映射编辑器
+赔率设置 — 每类彩票的投注赔率/费率配置
+彩票设置 — 开奖配置、快速模式切换、手动开奖控制
+自动采集 — 定时爬虫任务，从外部源抓取彩票图片（Puppeteer）
+3. 安全体系
+JWT 双令牌认证（Access 2h + Refresh 7d）+ Redis 黑名单
+TOTP 两步验证（Google Authenticator）
+登录失败锁定（默认 5 次失败，锁定 30 分钟）
+IP 白名单（按用户级别控制）
+操作审计日志（记录操作前后 diff、IP、UA）
+全局速率限制（120 次/60 秒）
+Helmet 安全头（HSTS、frameguard、CORS 等）
+敏感字段加密存储
+4. 彩票系统
+开奖记录管理（CRUD 历史开奖结果）
+TXT 批量导入历史开奖记录（带预览）
+手动快速录入开奖结果（含重复检测）
+随机生成海量历史记录
+WebSocket 实时开奖广播（端口 3002，逐球揭晓）
+开奖倒计时（WebSocket 实时推送）
+年度自动期数翻年
+彩票类型目录可配置
+风险控制参数配置与建议
+5. 代理/订单系统 (收单)
+代理账户管理 — 分层代理，含授权码、过期时间、上下级关系
+代理结算费率 — 按代理配置佣金/赔付率
+代理封禁 — IP/设备级别封禁
+代理登录会话 — 设备追踪、心跳、会话管理
+订单批次上传 — 客户端批量上传订单，含校验
+订单管理 — 查看、筛选、取消/恢复批次及明细
+结算追踪 — PENDING/LOST/WON 状态，赔付金额
+盈亏报表 — 按代理/全局统计盈亏
+订单热力图 — 可视化订单活跃度
+玩法分布分析 — 按玩法类型分析投注分布
+6. 动态随机子域名网关系统 (防封)
+随机子域名生成 — 每次会话生成 5 位随机子域名
+Redis 动态映射 — 子域名到目标地址映射，TTL 300 秒
+通配域名入口 — *.your-domain.com 捕获所有子域名
+智能 302 跳转 — Host 头查 Redis 映射后跳转实际目标
+风控前置检查 — IP/UA/Referer 黑名单拦截
+多路由支持 — 多条路由，可配权重和子域名轮换
+网关日志 — 所有访问记录（子域名、IP、UA、目标、状态）
+会话管理 — 后台查看/清除所有网关会话
+访客报表 — 网关访问统计与数据分析
+子域名轮转展示 — 网关页每 3 秒自动轮转子域名
+多级降级备用 — 主目标失败时自动 fallback
+品牌配置 — 网关页标题、名称、logo 可在后台配置
+会话心跳 — 保持映射存活的保活机制
+7. 防火墙/风控
+IP 黑名单
+User-Agent 黑名单
+Referer 黑名单
+每条规则支持启用/停用
+备注系统
+8. 爬虫/自动采集
+定时任务（Cron 表达式）
+双采集模式 — API 模式和 HTML 解析模式
+两种解析器 — STANDARD 和 SHELL_NAVIGATOR
+MD5 图片去重
+标签过滤（KEEP/DEPRECATED）
+自动清理（可配置最大图片数）
+Socket.IO 实时任务进度推送
+采集图片库浏览、筛选、批量标注与删除
+9. 域名管理
+主域名/泛域名注册
+启用/停用状态管理
+备注系统
+10. 小助手 (New-Order-Acquisition-Assistant)
+移动端优化 UI — 专为代理收单设计的触屏界面
+多彩种支持 — 新奥、正奥、香港三种彩票类型
+智能输入 — 统一输入框，自动识别彩种关键词
+OCR 文字提取 — 对接 OpenAI 兼容 API，图片转文字识别
+订单管理 — 创建账单、金额计算、彩种自动检测
+自动粘贴 — 剪贴板自动粘贴开关
+玩法选择 — 特码、两面、扑克等多种玩法
+开奖查看 — 弹窗展示彩票开奖结果
+音效反馈 — 下注成功提示音
+分享账单 — 通过微信/QQ 分享账单
+后端认证桥接 — token 鉴权、设备 ID、心跳
+主题色切换 — 按彩种切换配色方案
+暗黑模式 — Tailwind dark mode 支持
+11. 对外前端 (frontend/)
+动态内容渲染（5317 行 SPA 风格页面，从 API 拉取组件渲染）
+广告格子系统（图片、标签、缩放可配）
+图片轮播组件
+跑马灯公告条
+iframe 嵌入广告
+模块卡片（文本、图片、HTML 内容）
+澳门彩票专属页面 (am.html)
+历史开奖页（自定义、香港、澳门三个版本）
+网关落地页（路由选择、搜索、公告、入口按钮）
+自动会话初始化（5 秒倒计时跳转）
+路由轮转展示
+自定义 404 页面
+三、技术栈
+层	技术
+后端	Node.js + NestJS 11 + TypeScript
+数据库	PostgreSQL（Prisma ORM 5.8）
+缓存	Redis（ioredis，含内存降级）
+后台前端	Vue 3.4 + Vite 5 + Element Plus 2.5 + Pinia
+对外前端	原生 HTML/CSS/JS
+实时通信	Socket.IO + 原生 WebSocket
+爬虫	Puppeteer 24.x
+OCR	OpenAI 兼容 API
+部署	PM2 + Nginx + 宝塔面板
+四、数据库模型 (24 个)
+模块	模型
+权限	User, Role, UserRole, Module, Permission, RolePermission
+内容	Content, PeriodConfig
+站点	SiteSetting, PageLayout
+安全	AuditLog, FirewallRule
+网关	Domain, Route, RouteSubdomain, GatewayLog
+代理订单	Agent, AgentSession, AgentBan, AgentLoginLog, OrderBatch, OrderItem
+彩票	LotteryRecord
+上传	UploadFile, UploadImage, ImageCategory
+爬虫	SpiderTask, SpiderImage, SpiderLog
